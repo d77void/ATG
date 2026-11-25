@@ -1,0 +1,50 @@
+//@ pragma Env QS_NO_RELOAD_POPUP = 1
+import QtQuick
+import Quickshell
+import "theme"
+
+ShellRoot {
+    id: root
+
+    readonly property var systemLocale: Qt.locale()
+
+    Launcher { id: appLauncher }
+    SessionMenu { id: sessionMenu }
+    Osd { id: osdPopup }
+    EwmhWorkspaces { id: desktopWorkspaces }
+    BarStatus { id: desktopStatus }
+    Weather { id: localWeather }
+    WallpaperState { id: wallpaperState }
+    WallpaperPicker { wallpaper: wallpaperState }
+
+    Binding {
+        target: Colors
+        property: "wallpaperPath"
+        value: wallpaperState.currentPath
+    }
+
+    SystemClock {
+        id: clock
+        precision: SystemClock.Minutes
+    }
+
+    Variants {
+        model: Qt.application.screens
+
+        Bar {
+            required property var modelData
+
+            screen: modelData
+            workspaces: desktopWorkspaces
+            status: desktopStatus
+            weather: localWeather
+            clockText: clock.date.toLocaleDateString(root.systemLocale, "ddd d MMM")
+                + "  " + clock.date.toLocaleTimeString(root.systemLocale, Locale.ShortFormat)
+            launcherOpen: appLauncher.visible && appLauncher.screen === screen
+            sessionOpen: sessionMenu.visible && sessionMenu.screen === screen
+            onLauncherRequested: appLauncher.toggle(screen)
+            onSessionRequested: sessionMenu.toggle(screen)
+            onVolumeRequested: osdPopup.enqueue("volume")
+        }
+    }
+}

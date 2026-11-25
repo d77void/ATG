@@ -1,0 +1,10 @@
+[config]
+
+[config.custom_colors]
+green = "#9ece6a"
+yellow = "#e0af68"
+orange = "#ff9e64"
+
+[templates.d77]
+input_path = "./d77-palette.json"
+output_path = "./palette.json"
