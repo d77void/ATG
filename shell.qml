@@ -42,9 +42,18 @@ ShellRoot {
                 + "  " + clock.date.toLocaleTimeString(root.systemLocale, Locale.ShortFormat)
             launcherOpen: appLauncher.visible && appLauncher.screen === screen
             sessionOpen: sessionMenu.visible && sessionMenu.screen === screen
+            osdOpen: osdPopup.visible && osdPopup.screen === screen
+            profileLabel: osdPopup.profileLabel
             onLauncherRequested: appLauncher.toggle(screen)
             onSessionRequested: sessionMenu.toggle(screen)
             onVolumeRequested: osdPopup.enqueue("volume")
+            onProfileRequested: osdPopup.enqueue("power-profile")
+            onProfileCycleRequested: osdPopup.enqueue("power-cycle")
+            onMonitorRequested: mode => Quickshell.execDetached([
+                "env", "GDK_BACKEND=x11", "flock", "-o",
+                Quickshell.env("XDG_RUNTIME_DIR") + "/atg-monitor.lock",
+                Quickshell.shellPath("monitor/d77-monitor"), mode
+            ])
         }
     }
 }

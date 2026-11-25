@@ -23,6 +23,21 @@ Scope {
     readonly property bool hasBattery: batteryDevice?.isLaptopBattery ?? false
     readonly property int battery: hasBattery ? Math.round(batteryDevice.percentage * 100) : 0
     readonly property bool charging: hasBattery && batteryDevice.state === UPowerDeviceState.Charging
+    readonly property string batterySummary: {
+        if (!hasBattery)
+            return "";
+        if (charging)
+            return batteryDevice.timeToFull > 0 ? duration(batteryDevice.timeToFull) + " until full" : "Charging";
+        if (batteryDevice.state === UPowerDeviceState.Discharging)
+            return batteryDevice.timeToEmpty > 0 ? duration(batteryDevice.timeToEmpty) + " remaining" : "On battery";
+        return UPowerDeviceState.toString(batteryDevice.state).replace(/([a-z])([A-Z])/g, "$1 $2");
+    }
+
+    function duration(seconds: real): string {
+        const total = Math.round(seconds / 60);
+        const hours = Math.floor(total / 60);
+        return hours > 0 ? hours + "h " + total % 60 + "min" : total + "min";
+    }
 
     // Sample the Linux counters once for all bars.
     FileView {

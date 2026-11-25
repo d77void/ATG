@@ -10,10 +10,15 @@ Window {
     required property Weather weather
     property bool launcherOpen: false
     property bool sessionOpen: false
+    property bool osdOpen: false
+    required property string profileLabel
 
     signal launcherRequested
     signal sessionRequested
     signal volumeRequested
+    signal monitorRequested(string mode)
+    signal profileRequested
+    signal profileCycleRequested
 
     readonly property int gap: 10
     readonly property bool compact: width < 760
@@ -45,6 +50,17 @@ Window {
         font.family: bar.iconFont
         font.pixelSize: 13
         anchors.verticalCenter: parent.verticalCenter
+    }
+
+    component MetricButton: Label {
+        readonly property bool hovered: pointer.hovered
+        signal clicked
+
+        color: hovered ? bar.magenta : bar.foreground
+        Accessible.role: Accessible.Button
+        Accessible.onPressAction: clicked()
+        HoverHandler { id: pointer; cursorShape: Qt.PointingHandCursor }
+        TapHandler { onTapped: clicked() }
     }
 
     Rectangle {
@@ -205,6 +221,8 @@ Window {
         }
 
         Item {
+            id: statusArea
+
             anchors.left: centerRow.right
             anchors.leftMargin: bar.gap
             anchors.right: sessionDivider.left
@@ -214,31 +232,31 @@ Window {
             clip: true
 
             Row {
+                id: metrics
+
                 anchors.right: parent.right
                 height: parent.height
                 spacing: bar.compact ? 12 : 26
 
-                Label {
+                MetricButton {
                     visible: bar.width >= 700 && bar.status.cpu >= 0
                     text: "󰻠 " + bar.status.cpu + "%"
+                    Accessible.name: "Open CPU monitor"
+                    onClicked: bar.monitorRequested("cpu")
                 }
 
-                Label {
+                MetricButton {
                     visible: bar.width >= 700 && bar.status.memory >= 0
                     text: "󰍛 " + bar.status.memory + "%"
+                    Accessible.name: "Open memory monitor"
+                    onClicked: bar.monitorRequested("memory")
                 }
 
-                Label {
+                MetricButton {
                     visible: bar.status.volume >= 0
                     text: (bar.status.muted ? "󰝟 " : "󰕾 ") + bar.status.volume + "%"
-                    color: volumeHover.hovered ? bar.magenta : bar.foreground
-
-                    Accessible.role: Accessible.Button
                     Accessible.name: "Show volume"
-                    Accessible.onPressAction: bar.volumeRequested()
-
-                    HoverHandler { id: volumeHover; cursorShape: Qt.PointingHandCursor }
-                    TapHandler { onTapped: bar.volumeRequested() }
+                    onClicked: bar.volumeRequested()
                 }
 
                 Label {
@@ -257,29 +275,50 @@ Window {
                     }
                 }
 
-                Label {
+                MetricButton {
+                    id: batteryLabel
+
                     visible: bar.status.hasBattery
                     text: (bar.status.charging ? "󰂄 " : "󰁹 ") + bar.status.battery + "%"
-                    color: bar.status.charging ? Colors.green : bar.status.battery < 20 ? Colors.red : bar.foreground
+                    color: hovered ? bar.magenta : bar.status.charging ? Colors.green
+                        : bar.status.battery < 20 ? Colors.red : bar.foreground
+                    Accessible.name: "Cycle power profile"
+                    onHoveredChanged: if (hovered) bar.profileRequested()
+                    onClicked: bar.profileCycleRequested()
                 }
             }
         }
     }
 
-    Window {
-        id: weatherTip
+    BarTooltip {
+        anchorCenter: centerRow.x + weatherLabel.x + weatherLabel.width / 2
+        visible: weatherHover.hovered && !bar.launcherOpen && !bar.sessionOpen
+        title: "ATG Weather"
+        text: bar.weather.details
+    }
+
+    BarTooltip {
+        anchorCenter: statusArea.x + metrics.x + batteryLabel.x + batteryLabel.width / 2
+        visible: batteryLabel.hovered && !bar.launcherOpen && !bar.sessionOpen && !bar.osdOpen
+        title: "ATG Battery"
+        text: bar.status.batterySummary + "\nPower profile: " + bar.profileLabel
+    }
+
+    component BarTooltip: Window {
+        id: tip
+
+        required property real anchorCenter
+        required property string text
 
         screen: bar.screen
         x: Math.max(screen.virtualX + bar.gap, Math.min(
-            bar.x + centerRow.x + weatherLabel.x + Math.round((weatherLabel.width - width) / 2),
+            bar.x + anchorCenter - width / 2,
             screen.virtualX + screen.width - width - bar.gap))
         y: bar.y + bar.height + bar.gap
         width: Math.min(tipLabel.implicitWidth + 24, screen.width - 2 * bar.gap)
         height: tipLabel.implicitHeight + 16
         flags: Qt.ToolTip | Qt.X11BypassWindowManagerHint | Qt.WindowDoesNotAcceptFocus |
             Qt.WindowTransparentForInput
-        visible: weatherHover.hovered && !bar.launcherOpen && !bar.sessionOpen
-        title: "ATG Weather"
         color: "transparent"
 
         Rectangle {
@@ -296,7 +335,7 @@ Window {
                 anchors.leftMargin: 12
                 anchors.rightMargin: 12
                 elide: Text.ElideRight
-                text: bar.weather.details
+                text: tip.text
             }
         }
     }

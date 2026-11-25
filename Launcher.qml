@@ -36,6 +36,8 @@ Window {
         search.clear();
         resultsList.currentIndex = 0;
         show();
+        // Remapping the popup preserves its previous X11 stacking order.
+        raise();
         requestActivate();
         search.forceActiveFocus();
     }

@@ -65,7 +65,7 @@ if [[ -z $path ]]; then
     work_dir=$(mktemp -d -- "$state_dir/.backdrop.XXXXXX")
     if ! {
         LC_ALL=C python3 "$script_dir/backdrop/render.py" "$work_dir/backdrop.svg" &&
-        magick "$work_dir/backdrop.svg" -alpha off "$work_dir/backdrop.png" &&
+        magick "RSVG:$work_dir/backdrop.svg" -alpha off "$work_dir/backdrop.png" &&
         feh --no-fehbg --no-xinerama --bg-center -- "$work_dir/backdrop.png"
     }; then
         echo "Could not render the backdrop. Using a solid background." >&2

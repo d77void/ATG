@@ -21,19 +21,33 @@ EWMH. The session menu uses [Amorphis](https://github.com/dani-77/amorphis) to l
 - Quickshell with X11 support, wmd77, and an Xorg session.
 - A C compiler, `make`, and the Xlib development headers to build the workspace helper.
 - `feh`, `jq`, Bash, and `flock` for wallpaper selection. The decorative backdrop uses Python 3,
-  `xrandr`, and ImageMagick. Install [Matugen](https://github.com/InioX/matugen) 4.x for wallpaper colors.
+  `xrandr`, and ImageMagick with librsvg support. Install [Matugen](https://github.com/InioX/matugen) 4.x for wallpaper colors.
 - `pactl` for volume, `brightnessctl` for backlight control, and Amorphis and `loginctl`
   for the session actions. Network and battery status use NetworkManager and UPower.
+- Eww with X11 support and either `dgop` or `atop` for System Monitor.
+  `powerprofilesctl` and a running power-profiles-daemon enable power profile switching.
 
 ## Installing
 
-Clone ATG into Quickshell's config directory and build the workspace helper.
+Build ATG and install it as the system-wide Quickshell configuration `atg`.
 
 ```sh
-qs_config="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell"
-mkdir -p "$qs_config"
-git clone https://github.com/d77void/ATG.git "$qs_config/atg"
-make -C "$qs_config/atg"
+git clone https://github.com/d77void/ATG.git
+cd ATG
+make
+sudo make install
+```
+
+The default install directory is `/usr/share/quickshell/atg`. For a user install,
+run `make install SHAREDIR="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/atg"`
+instead.
+
+For a system-wide install with plain `qs`, add `/usr/share` to `XDG_CONFIG_DIRS`
+in the Xorg session before starting wmd77. [qsd77](https://github.com/dani-77/qsd77)
+includes `/usr/share` automatically.
+
+```sh
+export XDG_CONFIG_DIRS="/usr/share:${XDG_CONFIG_DIRS:-/etc/xdg}"
 ```
 
 In your wmd77 config, disable the built-in bar and reserve 48 pixels for ATG.
@@ -62,6 +76,11 @@ the clock sit in the center. CPU, memory, volume, network, battery and the sessi
 are on the right. The date and time use the system locale. The weather display queries
 [wttr.in](https://github.com/chubin/wttr.in) with `curl`. Set `ATG_WEATHER_LOCATION` in the
 session environment to specify a location.
+
+Click CPU or RAM to open System Monitor on the corresponding tab. Click the other
+metric to switch tabs, or click the active metric again to close it. Click the battery
+indicator to cycle the available power profiles and show the new profile in the OSD.
+Hover over the battery for the current profile and the battery estimate.
 
 Suggested wmd77 bindings
 
@@ -103,8 +122,9 @@ d77 shells.
 ## Uninstalling
 
 Stop ATG with `qs -c atg kill`. Remove the ATG entry from your wmd77 startup script
-and undo the bar and shortcut settings you added. You can then remove the ATG clone
-from the Quickshell config directory.
+and undo the bar and shortcut settings you added. Run `sudo make uninstall` from
+the source directory. If you installed with a custom `SHAREDIR`, pass the same
+value to `make uninstall`.
 
 ## More
 
