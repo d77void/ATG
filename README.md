@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="backdrop/d77-logo.svg" width="128" alt="d77 logo">
+  <img src="assets/ATG.png" width="128" alt="ATG logo">
 </p>
 
 <h1 align="center">ATG · At the Gates</h1>
