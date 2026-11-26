@@ -5,7 +5,7 @@ import Qt.labs.folderlistmodel
 import Quickshell.Io
 import "theme"
 
-Window {
+MenuWindow {
     id: picker
 
     required property WallpaperState wallpaper
@@ -16,15 +16,12 @@ Window {
     y: targetScreen.virtualY + Math.round((targetScreen.height - height) / 2)
     width: Math.min(720, targetScreen.width - 20)
     height: Math.min(520, targetScreen.height - 20)
-    flags: Qt.Popup | Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint
     title: "ATG Wallpaper"
-    color: "transparent"
 
     function open(): void {
         if (visible)
             return;
-        show();
-        requestActivate();
+        showMenu();
         grid.forceActiveFocus();
     }
 

@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Io
 import "theme"
 
-Window {
+MenuWindow {
     id: menu
 
     property var targetScreen: Qt.application.screens[0]
@@ -25,16 +25,13 @@ Window {
     y: targetScreen.virtualY + Math.round((targetScreen.height - height) / 2)
     width: 220
     height: choices.implicitHeight + 20
-    flags: Qt.Popup | Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint
     title: "ATG Session"
-    color: "transparent"
 
     function openAt(output: var): void {
         if (visible)
             return;
         targetScreen = output;
-        show();
-        requestActivate();
+        showMenu();
         sessionBox.forceActiveFocus();
     }
 

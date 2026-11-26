@@ -5,7 +5,7 @@ import Quickshell
 import Quickshell.Io
 import "theme"
 
-Window {
+MenuWindow {
     id: launcher
 
     property string terminal: ""
@@ -25,9 +25,7 @@ Window {
     y: targetScreen.virtualY + Math.round((targetScreen.height - height) / 2)
     width: Math.min(560, targetScreen.width - 20)
     height: Math.min(420, targetScreen.height - 20)
-    flags: Qt.Popup | Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint
     title: "ATG Launcher"
-    color: "transparent"
 
     Process {
         command: ["sh", "-c", `
@@ -51,10 +49,9 @@ Window {
         targetScreen = output;
         search.clear();
         resultsList.currentIndex = 0;
-        show();
+        showMenu();
         // Remapping the popup preserves its previous X11 stacking order.
         raise();
-        requestActivate();
         search.forceActiveFocus();
     }
 
