@@ -78,11 +78,13 @@ are on the right. The date and time use the system locale. The weather display q
 [wttr.in](https://github.com/chubin/wttr.in) with `curl`. Set `ATG_WEATHER_LOCATION` in the
 session environment to specify a location.
 
-Click CPU or RAM to open System Monitor on the corresponding tab. Click the other
-metric to switch tabs, or click the active metric again to close it. Click the network
-indicator to open `nmtui` in the same terminal used by the launcher. Click the battery
-indicator to cycle the available power profiles and show the new profile in the OSD.
-Hover over the battery for the current profile and the battery estimate.
+Click CPU or RAM to open System Monitor on the corresponding tab. Click the other metric
+to switch tabs, or click the active metric again to close it. Click the volume indicator
+to toggle mute. Drag up or down on the indicator to adjust volume in 5% steps. Both
+gestures show the volume OSD. Click the network indicator to open `nmtui` in the same
+terminal used by the launcher. Click the battery indicator to cycle the available power
+profiles and show the new profile in the OSD. Hover over the battery for the current
+profile and the battery estimate.
 
 Set `TERMINAL` to a terminal executable name or absolute path in the Xorg session
 environment to choose which terminal ATG uses. Otherwise, ATG uses the first available

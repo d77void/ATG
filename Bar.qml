@@ -16,6 +16,7 @@ Window {
     signal launcherRequested
     signal sessionRequested
     signal volumeRequested
+    signal volumeAdjusted(int steps)
     signal networkRequested
     signal monitorRequested(string mode)
     signal profileRequested
@@ -256,8 +257,25 @@ Window {
                 MetricButton {
                     visible: bar.status.volume >= 0
                     text: (bar.status.muted ? "󰝟 " : "󰕾 ") + bar.status.volume + "%"
-                    Accessible.name: "Show volume"
+                    Accessible.name: "Toggle mute"
                     onClicked: bar.volumeRequested()
+
+                    DragHandler {
+                        id: volumeDrag
+                        target: null
+                        xAxis.enabled: false
+                        property real handledY: 0
+                        onActiveChanged: handledY = 0
+                        onActiveTranslationChanged: {
+                            if (!active)
+                                return;
+                            const steps = Math.trunc((handledY - activeTranslation.y) / 12);
+                            if (steps === 0)
+                                return;
+                            handledY -= steps * 12;
+                            bar.volumeAdjusted(steps);
+                        }
+                    }
                 }
 
                 MetricButton {

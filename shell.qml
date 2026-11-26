@@ -46,7 +46,8 @@ ShellRoot {
             profileLabel: osdPopup.profileLabel
             onLauncherRequested: appLauncher.toggle(screen)
             onSessionRequested: sessionMenu.toggle(screen)
-            onVolumeRequested: osdPopup.enqueue("volume")
+            onVolumeRequested: osdPopup.enqueue("volume-mute")
+            onVolumeAdjusted: steps => osdPopup.adjustVolume(steps)
             onNetworkRequested: appLauncher.runInTerminal(["nmtui"], "")
             onProfileRequested: osdPopup.enqueue("power-profile")
             onProfileCycleRequested: osdPopup.enqueue("power-cycle")

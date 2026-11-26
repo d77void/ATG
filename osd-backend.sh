@@ -7,6 +7,7 @@ case "$1" in
     volume-up) pactl set-sink-volume "$sink" +5% ;;
     volume-down) pactl set-sink-volume "$sink" -5% ;;
     volume-mute) pactl set-sink-mute "$sink" toggle ;;
+    volume-adjust) pactl set-sink-volume "$sink" "$2" ;;
     brightness-up) brightnessctl -c backlight -q set 5%+ ;;
     brightness-down) brightnessctl -c backlight -q set 5%- ;;
     power-cycle)

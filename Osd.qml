@@ -38,14 +38,23 @@ Window {
     Component.onCompleted: enqueue("power-profile")
 
     function enqueue(operation: string): void {
-        pending.push(operation);
+        enqueueCommand([operation]);
+    }
+
+    function adjustVolume(steps: int): void {
+        const change = steps * 5;
+        enqueueCommand(["volume-adjust", (change > 0 ? "+" : "") + change + "%"]);
+    }
+
+    function enqueueCommand(args: var): void {
+        pending.push(args);
         if (!backend.running)
             next();
     }
 
     function next(): void {
         if (pending.length) {
-            backend.command = ["sh", Quickshell.shellPath("osd-backend.sh"), pending.shift()];
+            backend.command = ["sh", Quickshell.shellPath("osd-backend.sh"), ...pending.shift()];
             backend.running = true;
         }
     }
