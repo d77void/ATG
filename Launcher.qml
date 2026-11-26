@@ -8,7 +8,7 @@ import "theme"
 Window {
     id: launcher
 
-    property string terminal: "xterm"
+    property string terminal: ""
     property var targetScreen: Qt.application.screens[0]
     readonly property var results: {
         const query = search.text.trim().toLowerCase();
@@ -28,6 +28,22 @@ Window {
     flags: Qt.Popup | Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint
     title: "ATG Launcher"
     color: "transparent"
+
+    Process {
+        command: ["sh", "-c", `
+            for candidate in "$TERMINAL" st alacritty kitty xfce4-terminal terminator wezterm xterm; do
+                [ -n "$candidate" ] || continue
+                executable=$(command -v -- "$candidate") || continue
+                [ -f "$executable" ] && [ -x "$executable" ] || continue
+                printf '%s\\n' "$executable"
+                exit 0
+            done
+        `]
+        running: true
+        stdout: SplitParser {
+            onRead: line => launcher.terminal = line
+        }
+    }
 
     function open(output: var): void {
         if (visible)
@@ -54,18 +70,31 @@ Window {
             resultsList.currentIndex = (resultsList.currentIndex + delta + results.length) % results.length;
     }
 
+    function runInTerminal(command: var, workingDirectory: string): void {
+        if (!terminal) {
+            console.warn("No terminal found. Set TERMINAL or install a supported terminal.");
+            return;
+        }
+        const executable = terminal.split("/").pop();
+        let flags = ["-e"];
+        if (executable === "xfce4-terminal" || executable === "terminator")
+            flags = ["-x"];
+        else if (executable === "wezterm")
+            flags = ["start", "--"];
+        Quickshell.execDetached({
+            command: [terminal, ...flags, ...command],
+            workingDirectory: workingDirectory
+        });
+    }
+
     function launch(app: var): void {
         if (!app)
             return;
         hide();
-        if (app.runInTerminal) {
-            Quickshell.execDetached({
-                command: [terminal, "-e", ...app.command],
-                workingDirectory: app.workingDirectory
-            });
-        } else {
+        if (app.runInTerminal)
+            runInTerminal(app.command, app.workingDirectory);
+        else
             app.execute();
-        }
     }
 
     onResultsChanged: resultsList.currentIndex = 0

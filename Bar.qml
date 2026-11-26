@@ -16,6 +16,7 @@ Window {
     signal launcherRequested
     signal sessionRequested
     signal volumeRequested
+    signal networkRequested
     signal monitorRequested(string mode)
     signal profileRequested
     signal profileCycleRequested
@@ -259,10 +260,12 @@ Window {
                     onClicked: bar.volumeRequested()
                 }
 
-                Label {
+                MetricButton {
                     visible: bar.width >= 400
                     width: Math.min(implicitWidth, 200)
                     elide: Text.ElideRight
+                    Accessible.name: "Open NetworkManager in a terminal"
+                    onClicked: bar.networkRequested()
                     text: {
                         if (bar.status.wired)
                             return bar.compact ? "󰈀" : "󰈀 Wired";

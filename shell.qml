@@ -47,6 +47,7 @@ ShellRoot {
             onLauncherRequested: appLauncher.toggle(screen)
             onSessionRequested: sessionMenu.toggle(screen)
             onVolumeRequested: osdPopup.enqueue("volume")
+            onNetworkRequested: appLauncher.runInTerminal(["nmtui"], "")
             onProfileRequested: osdPopup.enqueue("power-profile")
             onProfileCycleRequested: osdPopup.enqueue("power-cycle")
             onMonitorRequested: mode => Quickshell.execDetached([

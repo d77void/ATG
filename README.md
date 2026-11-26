@@ -24,6 +24,7 @@ EWMH. The session menu uses [Amorphis](https://github.com/dani-77/amorphis) to l
   `xrandr`, and ImageMagick with librsvg support. Install [Matugen](https://github.com/InioX/matugen) 4.x for wallpaper colors.
 - `pactl` for volume, `brightnessctl` for backlight control, and Amorphis and `loginctl`
   for the session actions. Network and battery status use NetworkManager and UPower.
+  The network button uses `nmtui`.
 - Eww with X11 support and either `dgop` or `atop` for System Monitor.
   `powerprofilesctl` and a running power-profiles-daemon enable power profile switching.
 
@@ -78,9 +79,15 @@ are on the right. The date and time use the system locale. The weather display q
 session environment to specify a location.
 
 Click CPU or RAM to open System Monitor on the corresponding tab. Click the other
-metric to switch tabs, or click the active metric again to close it. Click the battery
+metric to switch tabs, or click the active metric again to close it. Click the network
+indicator to open `nmtui` in the same terminal used by the launcher. Click the battery
 indicator to cycle the available power profiles and show the new profile in the OSD.
 Hover over the battery for the current profile and the battery estimate.
+
+Set `TERMINAL` to a terminal executable name or absolute path in the Xorg session
+environment to choose which terminal ATG uses. Otherwise, ATG uses the first available
+terminal from `st`, `alacritty`, `kitty`, `xfce4-terminal`, `terminator`, `wezterm`, and
+`xterm`, in that order.
 
 Suggested wmd77 bindings
 
