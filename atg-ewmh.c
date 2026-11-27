@@ -2,6 +2,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,18 +57,46 @@ static void write_names(Display *display, Window root, Atom property, Atom utf8)
     putchar(']');
 }
 
+static void write_desktop_array(Display *display, Window root, Atom property,
+                                unsigned long desktops)
+{
+    Atom type;
+    int format;
+    unsigned long count, remaining;
+    unsigned char *value = NULL;
+
+    putchar('[');
+    if (desktops && desktops <= LONG_MAX &&
+        XGetWindowProperty(display, root, property, 0, (long)desktops, False, XA_CARDINAL,
+                           &type, &format, &count, &remaining, &value) == Success &&
+        type == XA_CARDINAL && format == 32 && count == desktops && !remaining) {
+        const unsigned long *counts = (const unsigned long *)value;
+        for (unsigned long i = 0; i < count; i++)
+            printf("%s%lu", i ? "," : "", counts[i]);
+    }
+    if (value)
+        XFree(value);
+    putchar(']');
+}
+
 static void watch_desktops(Display *display, Window root, Atom current)
 {
     Atom count = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", False);
     Atom names = XInternAtom(display, "_NET_DESKTOP_NAMES", False);
     Atom utf8 = XInternAtom(display, "UTF8_STRING", False);
+    Atom window_counts = XInternAtom(display, "_D77_WORKSPACE_COUNTS", False);
+    Atom urgent = XInternAtom(display, "_D77_WORKSPACE_URGENT", False);
     XSelectInput(display, root, PropertyChangeMask);
 
     for (;;) {
+        unsigned long desktops = read_cardinal(display, root, count, 0);
         printf("{\"count\":%lu,\"current\":%lu,\"names\":",
-               read_cardinal(display, root, count, 0),
-               read_cardinal(display, root, current, UINT32_MAX));
+               desktops, read_cardinal(display, root, current, UINT32_MAX));
         write_names(display, root, names, utf8);
+        printf(",\"windowCounts\":");
+        write_desktop_array(display, root, window_counts, desktops);
+        printf(",\"urgent\":");
+        write_desktop_array(display, root, urgent, desktops);
         puts("}");
         if (fflush(stdout) == EOF)
             return;
@@ -77,7 +106,8 @@ static void watch_desktops(Display *display, Window root, Atom current)
             XNextEvent(display, &event);
         } while (event.type != PropertyNotify ||
                  (event.xproperty.atom != current && event.xproperty.atom != count &&
-                  event.xproperty.atom != names));
+                  event.xproperty.atom != names && event.xproperty.atom != window_counts &&
+                  event.xproperty.atom != urgent));
     }
 }
 

@@ -14,7 +14,10 @@
 ATG adapts [Utumno](https://github.com/dani-77/utumno) to Xorg with
 [Quickshell](https://quickshell.org). Its first supported window manager is
 [wmd77](https://github.com/d77void/wmd77). The bar reads and changes workspaces through
-EWMH. The session menu uses [Amorphis](https://github.com/dani-77/amorphis) to lock the screen.
+EWMH. On Whiplash, empty inactive workspaces are dimmed and workspaces that need
+attention are red. ATG reads the `_D77_WORKSPACE_COUNTS` and `_D77_WORKSPACE_URGENT`
+root properties from the window manager. The session menu uses
+[Amorphis](https://github.com/dani-77/amorphis) to lock the screen.
 
 ## Before you install
 
@@ -50,6 +53,9 @@ includes `/usr/share` automatically.
 ```sh
 export XDG_CONFIG_DIRS="/usr/share:${XDG_CONFIG_DIRS:-/etc/xdg}"
 ```
+
+In a Whiplash X11 session, the bar announces its height and top margin through
+EWMH. Whiplash reserves that area automatically.
 
 In your wmd77 config, disable the built-in bar and reserve 48 pixels for ATG.
 

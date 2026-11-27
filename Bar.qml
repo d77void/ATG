@@ -1,7 +1,8 @@
 import QtQuick
+import Quickshell
 import "theme"
 
-Window {
+Scope {
     id: bar
 
     required property EwmhWorkspaces workspaces
@@ -31,20 +32,51 @@ Window {
     readonly property color secondary: Colors.fgDark
     readonly property color separator: Colors.muted
     readonly property color blue: Colors.blue
+    readonly property color red: Colors.red
     readonly property color magenta: Colors.magenta
 
-    x: screen.virtualX + gap
-    y: screen.virtualY + 8
-    width: screen.width - 2 * gap
-    height: 40
-    title: "ATG"
-    // wmd77 tiles dock windows. Its configured reserve_top provides the space.
-    flags: Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint | Qt.WindowDoesNotAcceptFocus
-    visible: true
-    color: "transparent"
+    required property var screen
+    readonly property int topGap: 8
+    readonly property int x: screen.virtualX + gap
+    readonly property int y: screen.virtualY + topGap
+    readonly property int width: screen.width - 2 * gap
+    readonly property int height: 40
 
-    // The reserved strip keeps tiled windows clear. Fullscreen clients can cover it.
-    Component.onCompleted: Qt.callLater(() => bar.lower())
+    readonly property bool useDock: Quickshell.env("XDG_CURRENT_DESKTOP") === "whiplash"
+
+    Loader {
+        id: dockWindow
+        active: bar.useDock
+
+        sourceComponent: PanelWindow {
+            screen: Quickshell.screens.find(output => output.name === bar.screen.name) ?? null
+            anchors { top: true; left: true; right: true }
+            margins { top: bar.topGap; left: bar.gap; right: bar.gap }
+            implicitHeight: bar.height
+            exclusiveZone: bar.height + bar.topGap
+            focusable: false
+            color: "transparent"
+        }
+    }
+
+    Window {
+        id: legacyBar
+        screen: bar.screen
+        x: bar.x
+        y: bar.y
+        width: bar.width
+        height: bar.height
+        title: "ATG"
+        // wmd77 provides its own reserve_top and tiles ordinary dock windows.
+        flags: Qt.X11BypassWindowManagerHint | Qt.FramelessWindowHint | Qt.WindowDoesNotAcceptFocus
+        visible: !bar.useDock
+        color: "transparent"
+
+        Component.onCompleted: {
+            if (visible)
+                Qt.callLater(() => legacyBar.lower())
+        }
+    }
 
     component Label: Text {
         textFormat: Text.PlainText
@@ -66,6 +98,7 @@ Window {
     }
 
     Rectangle {
+        parent: bar.useDock ? (dockWindow.item?.contentItem ?? null) : legacyBar.contentItem
         anchors.fill: parent
         radius: 12
         color: bar.background
@@ -134,12 +167,15 @@ Window {
 
                         required property int index
                         readonly property bool selected: bar.workspaces.current === index
+                        readonly property bool urgent: bar.workspaces.isUrgent(index)
                         readonly property string label: bar.workspaces.names[index] || String(index + 1)
 
                         width: Math.max(26, Math.min(workspaceText.implicitWidth + 12, 100))
                         height: 26
                         radius: 6
-                        color: selected ? bar.blue : workspaceHover.hovered ? bar.separator : bar.highlight
+                        color: selected ? bar.blue : urgent ? bar.red
+                            : workspaceHover.hovered ? bar.separator : bar.highlight
+                        opacity: !selected && !urgent && bar.workspaces.isEmpty(index) ? 0.4 : 1
 
                         Accessible.role: Accessible.Button
                         Accessible.name: "Workspace " + label
@@ -155,7 +191,7 @@ Window {
                             horizontalAlignment: Text.AlignHCenter
                             elide: Text.ElideRight
                             text: workspace.label
-                            color: workspace.selected ? bar.background : bar.secondary
+                            color: workspace.selected || workspace.urgent ? bar.background : bar.secondary
                             font.pixelSize: 14
                         }
 
